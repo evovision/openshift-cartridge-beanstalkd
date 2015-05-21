@@ -1,0 +1,9 @@
+cert   = <%= ENV['OPENSHIFT_BEANSTALKD_DIR'] %>/conf/stunnel.pem
+pid    = <%= ENV['OPENSHIFT_BEANSTALKD_DIR'] %>/run/stunnel.pid
+output = <%= ENV['OPENSHIFT_LOG_DIR'] %>/stunnel.log
+debug  = err
+fips   = no
+
+[secure]
+accept  = <%= ENV['OPENSHIFT_BEANSTALKD_IP'] %>:<%= ENV['OPENSHIFT_BEANSTALKD_PORT'] %>
+connect = <%= ENV['OPENSHIFT_BEANSTALKD_PRIVATE_IP'] %>:<%= ENV['OPENSHIFT_BEANSTALKD_PRIVATE_PORT'] %>

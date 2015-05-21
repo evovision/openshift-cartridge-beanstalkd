@@ -1,0 +1,50 @@
+#
+# $OPENSHIFT_REPO_DIR/stunnel-client.conf.erb
+#
+# Place this file inside your app's git repo, and replace all ${VARIABLE} with proper values.
+
+# What is this
+##############
+#
+# This file is a ERB template to create a valid client stunnel config.
+#
+#  $ oo-erb stunnel-client.conf.erb > stunnel-client.conf
+#           ^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^
+#                source file             generated file
+#
+# It should be made automatically during deploy, beecause when your app scales a new web gear,
+# it will recreate the correct paths for files in this config, also its local IP address.
+# Thus, this file should be preprocessed by some hook like .openshift/action_hooks/deploy
+
+# Certificate File
+##################
+#
+# You will need a certificate file to be place also in your app's repo too.
+# We recomend it to be $OPENSHIFT_REPO_DIR/stunnel/stunnel.pem
+# Make sure it has permission 600.
+#
+
+## No need to change below
+CAFile = <%= ENV['OPENSHIFT_DATA_DIR'] %>/.stunnel.pem
+output = <%= ENV['OPENSHIFT_LOG_DIR'] %>/stunnel.log
+pid    = <%= ENV['OPENSHIFT_DATA_DIR'] %>/stunnel.pid
+client = yes
+verify = 3
+fips   = no
+debug  = err
+
+###       MANUAL EDITING BELOW       ###
+### REPLACE ${VARIABLE} WHERE NEEDED ###
+
+[secure]
+
+## Where will client side stunnel listen for connections?
+accept = <%= ENV['OPENSHIFT_PHP_IP'] %>:11300
+#                 ^^^^^^^^^^^^^^^^
+#                        |
+#                        + Put web cartridge's env var containing IP address
+
+## Where is the server side stunnel waiting for connection?
+connect = <%= ENV['OPENSHIFT_BEANSTALKD_HOST'] %>:<%= ENV['OPENSHIFT_BEANSTALKD_PORT'] %>
+
+# EOF

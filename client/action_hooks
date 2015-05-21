@@ -1,0 +1,12 @@
+# Add to your .openshift/action_hooks/deploy
+if [ -e $OPENSHIFT_REPO_DIR/stunnel/stunnel-client.conf.erb ]; then
+   mv $OPENSHIFT_REPO_DIR/stunnel/stunnel.pem $OPENSHIFT_DATA_DIR/.stunnel.pem
+   chmod 600 $OPENSHIFT_DATA_DIR/.stunnel.pem
+   oo-erb $OPENSHIFT_REPO_DIR/stunnel/stunnel-client.conf.erb > $OPENSHIFT_DATA_DIR/stunnel-client.conf
+fi
+
+# Add to your .openshift/action_hooks/pre_start_<cartridge> (ex: pre_start_php)
+[ ! -e $OPENSHIFT_DATA_DIR/stunnel-client.conf ] || stunnel $OPENSHIFT_DATA_DIR/stunnel-client.conf
+
+# Add to your .openshift/action_hooks/post_stop_<cartridge> (ex: post_stop_php)
+killall stunnel || true

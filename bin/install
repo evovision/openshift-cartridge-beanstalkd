@@ -5,9 +5,45 @@ source $OPENSHIFT_CARTRIDGE_SDK_BASH
 BEANSTALKD_VERSION=${BEANSTALKD_VERSION:-v1.10}
 echo $BEANSTALKD_VERSION > env/BEANSTALKD_VERSION
 
-cd $OPENSHIFT_DATA_DIR
+# Download and install beanstalkd
+( cd $OPENSHIFT_DATA_DIR
 git clone git://github.com/kr/beanstalkd.git
 cd beanstalkd
 git checkout $BEANSTALKD_VERSION || true
 make
 make install PREFIX=$OPENSHIFT_BEANSTALKD_DIR/usr/versions/$BEANSTALKD_VERSION/
+)
+
+# Create stunnel certificate
+openssl req \
+	-new \
+	-days 3650 \
+	-nodes \
+	-x509 \
+	-subj "/C=BR/ST=SP/L=SaoPaulo/O=Cloud/CN=${OPENSHIFT_GEAR_DNS}" \
+	-keyout "conf/stunnel.pem" \
+	-out "conf/stunnel.pem"
+
+chmod 600 conf/stunnel.pem
+ln -s ../conf/stunnel.pem client/
+
+client_result '###################################################################'
+client_result 'This Cartridge uses Stunnel to secure your connection to Beanstalkd'
+client_result ''
+client_result 'All necessary files to connect to stunnel are locate inside this gear.'
+client_result 'You can view them by running:'
+client_result ''
+client_result "  $ rhc ssh ${OPENSHIFT_APP_NAME}"
+client_result ''
+client_result "Once inside your main gear, run:"
+client_result ''
+client_result "  > ssh ${OPENSHIFT_GEAR_UUID}@${OPENSHIFT_GEAR_DNS}"
+client_result '  > cd beanstalkd/client/'
+client_result '  > ls -l'
+client_result ''
+
+client_result 'Certificate information:'
+client_result ''
+client_result "$(openssl x509 -subject -dates -fingerprint -noout -in conf/stunnel.pem)"
+
+client_result '###################################################################'

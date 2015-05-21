@@ -5,10 +5,19 @@ SERVICE_NAME=Beanstalkd
 
 function _start_service()
 {
+	local SERVICE_IP=$OPENSHIFT_BEANSTALKD_IP
+	local SERVICE_PORT=$OPENSHIFT_BEANSTALKD_PORT
+
+	if [ "${STUNNEL_DISABLED}" != 'true' ]; then
+		SERVICE_IP=$OPENSHIFT_BEANSTALKD_PRIVATE_IP
+		SERVICE_PORT=$OPENSHIFT_BEANSTALKD_PRIVATE_PORT
+		stunnel ${OPENSHIFT_BEANSTALKD_DIR}/conf/stunnel.conf
+	fi
+
 	nohup supervisor -i . -x /usr/bin/env -- \
 		$OPENSHIFT_BEANSTALKD_DIR/usr/versions/$BEANSTALKD_VERSION/bin/beanstalkd \
-			-l $OPENSHIFT_BEANSTALKD_IP \
-			-p $OPENSHIFT_BEANSTALKD_PORT \
+			-l $SERVICE_IP \
+			-p $SERVICE_PORT \
 			-b $OPENSHIFT_DATA_DIR/wal \
 			-f 1000 \
 		|& /usr/bin/logshifter -tag beanstalkd &
@@ -22,8 +31,19 @@ function _read_pid() {
 	/sbin/pidof node
 }
 
+function _read_stunnel_pid() {
+	if [ -f $OPENSHIFT_BEANSTALKD_DIR/run/stunnel.pid ]; then
+		echo $(<$OPENSHIFT_BEANSTALKD_DIR/run/stunnel.pid)
+	fi
+}
+
 function _isrunning() {
 	_read_pid
+}
+
+function _isstunnelrunning() {
+	local pid=`_read_stunnel_pid`
+	kill -0 "$pid" 2>/dev/null || return 1
 }
 
 function start() {
@@ -68,6 +88,12 @@ case "$1" in
 			client_result "$SERVICE_NAME is running"
 		else
 			client_result "$SERVICE_NAME is stopped"
+		fi
+		if [ "${STUNNEL_DISABLED}" != 'true' ] && _isstunnelrunning
+		then
+			client_result "Stunnel is running"
+		else
+			client_result "Stunnel is stopped"
 		fi
 		exit 0
 	;;

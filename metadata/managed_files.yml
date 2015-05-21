@@ -4,6 +4,7 @@ locked_files:
 - bin/*
 - env
 - env/*
+- conf
 - metadata
 - metadata/*
 - hooks/
@@ -11,4 +12,4 @@ locked_files:
 - usr
 - usr/*
 processed_templates:
-- '**/*.erb'
+- 'conf/*.erb'

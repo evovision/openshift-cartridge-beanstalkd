@@ -1,0 +1,74 @@
+#!/bin/bash
+
+source $OPENSHIFT_CARTRIDGE_SDK_BASH
+SERVICE_NAME=Beanstalkd
+
+function _start_service()
+{
+	nohup supervisor -i . -x /usr/bin/env -- \
+		$OPENSHIFT_BEANSTALKD_DIR/usr/versions/$BEANSTALKD_VERSION/bin/beanstalkd \
+			-l $OPENSHIFT_BEANSTALKD_IP \
+			-p $OPENSHIFT_BEANSTALKD_PORT \
+			-b $OPENSHIFT_DATA_DIR/wal \
+			-f 1000 \
+		|& /usr/bin/logshifter -tag beanstalkd &
+}
+
+function _log() {
+	echo "$@" | /usr/bin/logshifter -tag beanstalkd
+}
+
+function _read_pid() {
+	/sbin/pidof node
+}
+
+function _isrunning() {
+	_read_pid
+}
+
+function start() {
+	if ! _isrunning; then
+		_start_service
+
+		if [ $? -ne 0 ]; then
+			client_message "$SERVICE_NAME has failed to start"
+			exit 1
+		fi
+	else
+		client_result "$SERVICE_NAME already running"
+	fi
+}
+
+function stop() {
+	local pid=`_read_pid`
+
+	if [ -n "$pid" ]; then
+		if kill "$pid" 2>/dev/null; then
+			_log "$SERVICE_NAME stopped"
+		fi
+	else
+		client_result "$SERVICE_NAME already stopped"
+	fi
+}
+
+case "$1" in
+	start)
+		start
+	;;
+	stop)
+		stop
+	;;
+	restart)
+		stop
+		start
+	;;
+	status)
+		if _isrunning
+		then
+			client_result "$SERVICE_NAME is running"
+		else
+			client_result "$SERVICE_NAME is stopped"
+		fi
+		exit 0
+	;;
+esac

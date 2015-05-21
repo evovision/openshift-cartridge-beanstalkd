@@ -1,0 +1,37 @@
+Name: beanstalkd
+Display-Name: Beanstalkd 1.10
+Cartridge-Short-Name: BEANSTALKD
+Description: "Beanstalk is a simple, fast work queue."
+Version: '1.10'
+Cartridge-Version: 1.0.0
+Cartridge-Vendor: getup
+License: ASL 2.0
+Vendor: beanstalkd
+
+Categories:
+  - service
+  - embedded
+  - queue
+
+Website: http://kr.github.io/beanstalkd/
+
+Provides:
+  - beanstalkd
+  - beanstalkd-1
+  - beanstalkd-1.10
+
+Publishes:
+  publish-cache-connection-info:
+    Type: "ENV:NET_TCP:cache:connection-info"
+
+Scaling:
+  Min: 1
+  Max: 1
+
+Endpoints:
+  - Private-IP-Name:   IP
+    Private-Port-Name: PORT
+    Private-Port:      11300
+    Public-Port-Name:  PROXY_PORT
+
+#Source-Url: "git://github.com/caruccio/openshift-cartridge-beanstalkd.git"

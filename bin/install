@@ -1,0 +1,13 @@
+#!/bin/bash -e
+
+source $OPENSHIFT_CARTRIDGE_SDK_BASH
+
+BEANSTALKD_VERSION=${BEANSTALKD_VERSION:-v1.10}
+echo $BEANSTALKD_VERSION > env/BEANSTALKD_VERSION
+
+cd $OPENSHIFT_DATA_DIR
+git clone git://github.com/kr/beanstalkd.git
+cd beanstalkd
+git checkout $BEANSTALKD_VERSION || true
+make
+make install PREFIX=$OPENSHIFT_BEANSTALKD_DIR/usr/versions/$BEANSTALKD_VERSION/

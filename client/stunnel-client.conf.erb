@@ -31,7 +31,7 @@ pid    = <%= ENV['OPENSHIFT_DATA_DIR'] %>/stunnel.pid
 client = yes
 verify = 3
 fips   = no
-debug  = err
+debug  = <%= ENV['STUNNEL_LOG_LEVEL'] || 'err' %>
 
 ###       MANUAL EDITING BELOW       ###
 ### REPLACE ${VARIABLE} WHERE NEEDED ###

@@ -38,4 +38,4 @@ Endpoints:
     Private-Port-Name: PRIVATE_PORT
     Private-Port:      11301
 
-#Source-Url: "git://github.com/caruccio/openshift-cartridge-beanstalkd.git"
+Source-Url: "git://github.com/caruccio/openshift-cartridge-beanstalkd.git"
